@@ -5,13 +5,17 @@ import java.nio.file.Paths
 //params.output_folder = '/data/dperera/outputs/test_docker'
 //params.bam_folder = '/data/dperera/from_s3/200817_M02558_0388_000000000-J6PKJ'
 
+bam_folder="$projectDir/$params.bam_folder"
+loci_file_msisensor = "$projectDir/$params.loci_file_msisensor"
+normal_bam = "$projectDir/$params.normal_bam"
+normal_bai = "$projectDir/$params.normal_bai"
 
 // Read in bam files
-bam_paths = Paths.get(params.bam_folder,"/DNA*/DNA*[0-9].hardclipped.bam")
+bam_paths = Paths.get(bam_folder,"/DNA*/DNA*[0-9].hardclipped.bam")
 bam_files = Channel.fromPath(bam_paths)
 
 // Read in bai files
-bai_paths = Paths.get(params.bam_folder,"/DNA*/DNA*[0-9].hardclipped.bam.bai")
+bai_paths = Paths.get(bam_folder,"/DNA*/DNA*[0-9].hardclipped.bam.bai")
 bai_files = Channel.fromPath(bai_paths)
 
 
@@ -31,11 +35,14 @@ process run_msisensor{
     input:
         file tumour_bam from bam_files_msisensor
 	file tumour_bai from bai_files_msisensor
+        path normal_bam
+        path normal_bai
+        path loci_file_msisensor
     output:
         file "${tumour_bam.baseName}.msisensor" into msisensor_outputs
 
     """
-    msisensor msi -d $params.loci_file_msisensor -n $params.normal_bam -t ${tumour_bam} -o ${tumour_bam.baseName}.msisensor
+    msisensor msi -d $loci_file_msisensor -n $normal_bam -t ${tumour_bam} -o ${tumour_bam.baseName}.msisensor
     """
 }
 
